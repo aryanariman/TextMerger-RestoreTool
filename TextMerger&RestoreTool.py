@@ -1,15 +1,9 @@
 import os
 import re
-from colorama import Fore, Style, init
 import chardet
+from colorama import Fore, Style, init
 
 init(autoreset=True)
-
-def get_clean_path(prompt):
-    path = input(Fore.CYAN + prompt + Style.RESET_ALL).strip()
-    if (path.startswith('"') and path.endswith('"')) or (path.startswith("'") and path.endswith("'")):
-        path = path[1:-1]
-    return path
 
 def read_any_encoding(path):
     with open(path, 'rb') as f:
@@ -19,9 +13,19 @@ def read_any_encoding(path):
     encoding = detected['encoding'] or 'utf-8'
 
     try:
-        return raw.decode(encoding).splitlines()
+        text = raw.decode(encoding)
     except UnicodeDecodeError:
-        return raw.decode(encoding, errors='replace').splitlines()
+        text = raw.decode(encoding, errors='replace')
+
+    return text.splitlines(), encoding
+
+
+def get_clean_path(prompt):
+    path = input(Fore.CYAN + prompt + Style.RESET_ALL).strip()
+    if (path.startswith('"') and path.endswith('"')) or (path.startswith("'") and path.endswith("'")):
+        path = path[1:-1]
+    return path
+
 
 def merge_txt_files(txt_folder, base_folder):
     txt_files = [f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')]
@@ -33,16 +37,15 @@ def merge_txt_files(txt_folder, base_folder):
 
     for file in txt_files:
         file_path = os.path.join(txt_folder, file)
-        lines = read_any_encoding(file_path)
-
+        lines, encoding = read_any_encoding(file_path)
 
         for line_num, line in enumerate(lines, start=1):
             merged_lines.append(line)
-            map_lines.append(f"{index}::{file}::{line_num}")
+            map_lines.append(f"{index}::{file}::{line_num}::{encoding}")
             index += 1
 
-    map_folder = os.path.join(base_folder, 'Map_Merger')
-    merged_folder = os.path.join(base_folder, 'TXT_Merged')
+    map_folder = os.path.join(txt_folder, 'Map_Merger')
+    merged_folder = os.path.join(txt_folder, 'TXT_Merged')
     os.makedirs(map_folder, exist_ok=True)
     os.makedirs(merged_folder, exist_ok=True)
 
@@ -55,9 +58,10 @@ def merge_txt_files(txt_folder, base_folder):
     with open(map_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(map_lines))
 
-    print(Fore.GREEN + "\nCreated:"+ Fore.LIGHTGREEN_EX +
+    print(Fore.GREEN + "\nCreated:" + Fore.LIGHTGREEN_EX +
           "\n\n- Merged TXT: " + Fore.RESET + f"{merged_path}" +
           Fore.LIGHTGREEN_EX + "\n- Map File: " + Fore.RESET + f"{map_path}")
+
 
 def resolve_map_path(map_input):
     if os.path.isfile(map_input):
@@ -75,6 +79,7 @@ def resolve_map_path(map_input):
         return None
     print(Fore.RED + "Provided map path is neither a file nor a folder.")
     return None
+
 
 def resolve_merged_path(merged_input, base_folder):
     if os.path.isfile(merged_input):
@@ -97,9 +102,11 @@ def resolve_merged_path(merged_input, base_folder):
     print(Fore.RED + "Provided merged path is neither a file nor a folder.")
     return None
 
+
 def split_txt_files(map_path, merged_path, base_folder):
-    map_lines = read_any_encoding(map_path)
-    merged_lines = read_any_encoding(merged_path)
+
+    map_lines, _ = read_any_encoding(map_path)
+    merged_lines, _ = read_any_encoding(merged_path)
 
     if len(map_lines) != len(merged_lines):
         print(Fore.RED + f"Line count mismatch: map={len(map_lines)} vs merged={len(merged_lines)}")
@@ -109,28 +116,35 @@ def split_txt_files(map_path, merged_path, base_folder):
     os.makedirs(output_folder, exist_ok=True)
 
     file_contents = {}
+    file_encodings = {}
 
     for i, map_line in enumerate(map_lines):
         parts = map_line.split("::")
-        if len(parts) != 3:
+        if len(parts) != 4:
             print(Fore.RED + f"Malformed map line at {i+1}: {map_line}")
             return
-        _, filename, line_num_str = parts
-        text = merged_lines[i]
-        file_contents.setdefault(filename, []).append(text)
 
-    # چاپ مسیر خروجی یک بار
+        _, filename, line_num_str, source_encoding = parts
+        text = merged_lines[i]
+
+        file_contents.setdefault(filename, []).append(text)
+        file_encodings[filename] = source_encoding
+
     print(Fore.LIGHTGREEN_EX + "- Output: " + Fore.RESET + f"{output_folder}\n\n")
 
     for filename, lines in file_contents.items():
         output_path = os.path.join(output_folder, filename)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
+
+        encoding = file_encodings.get(filename, 'utf-8')
+
+        with open(output_path, 'w', encoding=encoding, errors='replace') as f:
             f.write('\n'.join(lines))
-        # فقط اسم فایل
+
         print(Fore.LIGHTBLACK_EX + f" {filename}")
 
     print(Fore.GREEN + "\n\nOutput processing completed.")
+
 
 def main():
     print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool\nAuthor: Nariman\n\n" + Style.RESET_ALL)
@@ -170,6 +184,7 @@ def main():
         print(Fore.RED + "Invalid mode selected.")
 
     input(Fore.YELLOW + "\n\nPress Enter For Exit..." + Style.RESET_ALL)
+
 
 if __name__ == "__main__":
     main()
