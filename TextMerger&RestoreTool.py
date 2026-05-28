@@ -1,6 +1,7 @@
 import os
 import re
 from colorama import Fore, Style, init
+import chardet
 
 init(autoreset=True)
 
@@ -9,6 +10,18 @@ def get_clean_path(prompt):
     if (path.startswith('"') and path.endswith('"')) or (path.startswith("'") and path.endswith("'")):
         path = path[1:-1]
     return path
+
+def read_any_encoding(path):
+    with open(path, 'rb') as f:
+        raw = f.read()
+
+    detected = chardet.detect(raw)
+    encoding = detected['encoding'] or 'utf-8'
+
+    try:
+        return raw.decode(encoding).splitlines()
+    except UnicodeDecodeError:
+        return raw.decode(encoding, errors='replace').splitlines()
 
 def merge_txt_files(txt_folder, base_folder):
     txt_files = [f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')]
@@ -20,8 +33,8 @@ def merge_txt_files(txt_folder, base_folder):
 
     for file in txt_files:
         file_path = os.path.join(txt_folder, file)
-        with open(file_path, 'r', encoding='utf-8') as f:
-            lines = f.read().splitlines()
+        lines = read_any_encoding(file_path)
+
 
         for line_num, line in enumerate(lines, start=1):
             merged_lines.append(line)
@@ -85,10 +98,8 @@ def resolve_merged_path(merged_input, base_folder):
     return None
 
 def split_txt_files(map_path, merged_path, base_folder):
-    with open(map_path, 'r', encoding='utf-8') as f:
-        map_lines = f.read().splitlines()
-    with open(merged_path, 'r', encoding='utf-8') as f:
-        merged_lines = f.read().splitlines()
+    map_lines = read_any_encoding(map_path)
+    merged_lines = read_any_encoding(merged_path)
 
     if len(map_lines) != len(merged_lines):
         print(Fore.RED + f"Line count mismatch: map={len(map_lines)} vs merged={len(merged_lines)}")
