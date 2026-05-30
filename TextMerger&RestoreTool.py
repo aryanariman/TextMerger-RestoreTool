@@ -44,7 +44,7 @@ def merge_txt_files(txt_folder, base_folder, output_name):
             map_lines.append(f"{index}::{file}::{line_num}::{encoding}")
             index += 1
 
-    map_folder = os.path.join(txt_folder, 'Map_Merger')
+    map_folder = os.path.join(txt_folder, 'Map_Merged')
     merged_folder = os.path.join(txt_folder, 'TXT_Merged')
     os.makedirs(map_folder, exist_ok=True)
     os.makedirs(merged_folder, exist_ok=True)
