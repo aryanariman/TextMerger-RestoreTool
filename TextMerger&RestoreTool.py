@@ -27,7 +27,7 @@ def get_clean_path(prompt):
     return path
 
 
-def merge_txt_files(txt_folder, base_folder):
+def merge_txt_files(txt_folder, base_folder, output_name):
     txt_files = [f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')]
     txt_files.sort(key=lambda x: x.lower())
 
@@ -48,9 +48,19 @@ def merge_txt_files(txt_folder, base_folder):
     merged_folder = os.path.join(txt_folder, 'TXT_Merged')
     os.makedirs(map_folder, exist_ok=True)
     os.makedirs(merged_folder, exist_ok=True)
-
-    merged_path = os.path.join(merged_folder, 'merged.txt')
-    map_path = os.path.join(map_folder, 'merged.map')
+    
+    base_name = os.path.basename(os.path.normpath(base_folder))
+    
+    if output_name == "":
+       txt_map_name = base_name
+       #print("Skiped")
+    
+    elif output_name != "":
+        #print("Not Skiped")
+        txt_map_name = output_name
+    
+    merged_path = os.path.join(merged_folder, f'{txt_map_name}.txt')
+    map_path = os.path.join(map_folder, f'{txt_map_name}.map')
 
     with open(merged_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(merged_lines))
@@ -157,10 +167,11 @@ def main():
 
     if mode == '1':
         txt_folder = get_clean_path("\nEnter the path to the folder containing TXT files: ")
+        output_name = input(Fore.YELLOW +"\nEnter your want to save name of txt and map file (If skip, files name Equal name folder ../.. ): "+Style.RESET_ALL)
         base_folder = os.path.dirname(txt_folder)
         count = len([f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')])
         print(Fore.CYAN + f"\nFound {count} TXT files in {txt_folder} \n")
-        merge_txt_files(txt_folder, base_folder)
+        merge_txt_files(txt_folder, base_folder, output_name)
 
     elif mode == '2':
         map_input = get_clean_path("\nEnter the path to the Map File or Folder: ")
