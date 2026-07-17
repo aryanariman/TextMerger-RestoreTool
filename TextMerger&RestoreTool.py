@@ -1,6 +1,7 @@
 import os
 import re
 import chardet
+import time
 from colorama import Fore, Style, init
 
 init(autoreset=True)
@@ -19,6 +20,8 @@ def read_any_encoding(path):
 
     return text.splitlines(), encoding
 
+def clear_terminal():
+    os.system("cls" if os.name == "nt" else "clear")
 
 def get_clean_path(prompt):
     path = input(Fore.CYAN + prompt + Style.RESET_ALL).strip()
@@ -157,44 +160,69 @@ def split_txt_files(map_path, merged_path, base_folder):
 
 
 def main():
-    print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool\nAuthor: Nariman\n\n" + Style.RESET_ALL)
+    while True:
+        clear_terminal()
+        print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool\nAuthor: Nariman\n\n" + Style.RESET_ALL)
 
-    print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Merge TXT Files")
-    print(Fore.YELLOW + "   2 -" + Style.RESET_ALL + " Restore Original Files\n")
+        print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Merge TXT Files")
+        print(Fore.YELLOW + "   2 -" + Style.RESET_ALL + " Restore Original Files\n")
 
-    mode = input(Fore.LIGHTYELLOW_EX + "Enter your Choice (1 or 2): " + Style.RESET_ALL).strip()
-    print("")
+        mode = input(Fore.LIGHTYELLOW_EX + "Enter your Choice (1 or 2): " + Style.RESET_ALL).strip()
+        print("")
 
-    if mode == '1':
-        txt_folder = get_clean_path("\nEnter the path to the folder containing TXT files: ")
-        output_name = input(Fore.YELLOW +"\nEnter your want to save name of txt and map file (If skip, files name Equal name folder ../.. ): "+Style.RESET_ALL)
-        base_folder = os.path.dirname(txt_folder)
-        count = len([f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')])
-        print(Fore.CYAN + f"\nFound {count} TXT files in {txt_folder} \n")
-        merge_txt_files(txt_folder, base_folder, output_name)
+        if mode == '1':
+            txt_folder = get_clean_path("\nEnter the path to the folder containing TXT files: ")
+            output_name = input(Fore.YELLOW +"\nEnter your want to save name of txt and map file (If skip, files name Equal name folder ../.. ): "+Style.RESET_ALL)
+            base_folder = os.path.dirname(txt_folder)
 
-    elif mode == '2':
-        map_input = get_clean_path("\nEnter the path to the Map File or Folder: ")
-        base_folder = os.path.dirname(map_input)
-        map_path = resolve_map_path(map_input)
-        if not map_path:
-            return
+            if os.path.isdir(txt_folder):
+                count = len([f for f in os.listdir(txt_folder) if f.lower().endswith('.txt')])
+                print(Fore.CYAN + f"\nFound {count} TXT files in {txt_folder} \n")
+                merge_txt_files(txt_folder, base_folder, output_name)
+            else:
+                print(Fore.RED + "\nNot exist path !")
+                time.sleep(1)
+                #continue
 
-        merged_input = get_clean_path("\nEnter the path to the Merged TXT File or Folder: ")
-        merged_path = resolve_merged_path(merged_input, base_folder)
-        if not merged_path:
-            return
 
-        print(Fore.GREEN + f"\n\nProcessing pair:" +
-              Fore.LIGHTGREEN_EX + "\n- Map: " + Fore.RESET + f"{map_path}\n" +
-              Fore.LIGHTGREEN_EX + "- Merged: " + Fore.RESET + f"{merged_path}")
+        elif mode == '2':
+            map_input = get_clean_path("\nEnter the path to the Map File or Folder: ")
+            base_folder = os.path.dirname(map_input)
+            map_path = resolve_map_path(map_input)
+            if not map_path:
+                return
 
-        split_txt_files(map_path, merged_path, base_folder)
+            merged_input = get_clean_path("\nEnter the path to the Merged TXT File or Folder: ")
+            merged_path = resolve_merged_path(merged_input, base_folder)
+            if not merged_path:
+                return
 
-    else:
-        print(Fore.RED + "Invalid mode selected.")
+            print(Fore.GREEN + f"\n\nProcessing pair:" +
+                Fore.LIGHTGREEN_EX + "\n- Map: " + Fore.RESET + f"{map_path}\n" +
+                Fore.LIGHTGREEN_EX + "- Merged: " + Fore.RESET + f"{merged_path}")
 
-    input(Fore.YELLOW + "\n\nPress Enter For Exit..." + Style.RESET_ALL)
+            split_txt_files(map_path, merged_path, base_folder)
+
+        else:
+            print(Fore.RED + "Invalid mode selected.")
+
+        print(Fore.YELLOW + "\n\nWhat do you want to do next?\n" + Style.RESET_ALL)
+        print(Fore.YELLOW + "   0 -" + Style.RESET_ALL + " Exit program")
+        print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Restart program\n")
+
+        end_choice = input(Fore.LIGHTYELLOW_EX + "Enter your Choice (0, 1): " + Style.RESET_ALL).strip()
+        if end_choice == "0":
+            print(Fore.RED + "\nProgram will close in 3 seconds... Goodbye!\n" + Style.RESET_ALL)
+            time.sleep(3)
+            break
+        elif end_choice == "1":
+            print(Fore.CYAN + "\nRestarting program...\n" + Style.RESET_ALL)
+            continue
+        else:
+            print(Fore.RED + "\nInvalid choice! Exiting by default.\n" + Style.RESET_ALL)
+            time.sleep(3)
+            break
+
 
 
 if __name__ == "__main__":
