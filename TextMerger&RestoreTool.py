@@ -83,15 +83,15 @@ def resolve_map_path(map_input):
         candidates = [f for f in os.listdir(map_input) if f.lower().endswith('.map')]
         if not candidates:
             print(Fore.RED + "No .map file found in the provided folder.")
-            return None
+        return None
         if 'merged.map' in candidates:
             return os.path.join(map_input, 'merged.map')
         if len(candidates) == 1:
             return os.path.join(map_input, candidates[0])
         print(Fore.RED + "Multiple .map files found. Please provide the exact .map file path.")
         return None
-    print(Fore.RED + "Provided map path is neither a file nor a folder.")
-    return None
+    print(Fore.RED + "\nNot exist map path!")
+    goodbye()
 
 
 def resolve_merged_path(merged_input, base_folder):
@@ -103,17 +103,18 @@ def resolve_merged_path(merged_input, base_folder):
             return os.path.join(merged_input, 'merged.txt')
         if len(candidates) == 1:
             return os.path.join(merged_input, candidates[0])
-        print(Fore.RED + "Multiple .txt files found. Please provide the exact merged TXT file path.")
+        print(Fore.RED + "\nMultiple .txt files found. Please provide the exact merged TXT file path.")
         return None
     if not merged_input:
         default_folder = os.path.join(base_folder, 'TXT_Merged')
         default_file = os.path.join(default_folder, 'merged.txt')
         if os.path.isfile(default_file):
             return default_file
-        print(Fore.RED + "No merged.txt found in default TXT_Merged folder.")
+        print(Fore.RED + "\nNo merged.txt found in default TXT_Merged folder.")
         return None
-    print(Fore.RED + "Provided merged path is neither a file nor a folder.")
-    return None
+    print(Fore.RED + "\nNot exist merged path!")
+    goodbye()
+
 
 
 def split_txt_files(map_path, merged_path, base_folder):
@@ -159,8 +160,30 @@ def split_txt_files(map_path, merged_path, base_folder):
     print(Fore.GREEN + "\n\nOutput processing completed.")
 
 
+def goodbye():
+    time.sleep(0.5)
+    print(Fore.YELLOW + "\n\nWhat do you want to do next?\n" + Style.RESET_ALL)
+    print(Fore.YELLOW + "   0 -" + Style.RESET_ALL + " Exit program")
+    print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Restart program\n")
+
+    end_choice = input(Fore.LIGHTYELLOW_EX + "Enter your Choice (0, 1): " + Style.RESET_ALL).strip()
+    if end_choice == "0":
+        print(Fore.RED + "\nProgram will close in 2 seconds... Goodbye!\n" + Style.RESET_ALL)
+        time.sleep(2)
+        #break
+
+    elif end_choice == "1":
+        print(Fore.CYAN + "\nRestarting program...\n" + Style.RESET_ALL)
+        main()
+
+    else:
+        print(Fore.RED + "\nInvalid choice! Exiting by default.\n" + Style.RESET_ALL)
+        time.sleep(0.5)
+        #break
+
+
+
 def main():
-    while True:
         clear_terminal()
         print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool\nAuthor: Nariman\n\n" + Style.RESET_ALL)
 
@@ -181,21 +204,16 @@ def main():
                 merge_txt_files(txt_folder, base_folder, output_name)
             else:
                 print(Fore.RED + "\nNot exist path !")
-                time.sleep(1)
-                #continue
+                goodbye()
 
 
         elif mode == '2':
             map_input = get_clean_path("\nEnter the path to the Map File or Folder: ")
             base_folder = os.path.dirname(map_input)
             map_path = resolve_map_path(map_input)
-            if not map_path:
-                return
 
             merged_input = get_clean_path("\nEnter the path to the Merged TXT File or Folder: ")
             merged_path = resolve_merged_path(merged_input, base_folder)
-            if not merged_path:
-                return
 
             print(Fore.GREEN + f"\n\nProcessing pair:" +
                 Fore.LIGHTGREEN_EX + "\n- Map: " + Fore.RESET + f"{map_path}\n" +
@@ -206,22 +224,8 @@ def main():
         else:
             print(Fore.RED + "Invalid mode selected.")
 
-        print(Fore.YELLOW + "\n\nWhat do you want to do next?\n" + Style.RESET_ALL)
-        print(Fore.YELLOW + "   0 -" + Style.RESET_ALL + " Exit program")
-        print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Restart program\n")
+        goodbye()
 
-        end_choice = input(Fore.LIGHTYELLOW_EX + "Enter your Choice (0, 1): " + Style.RESET_ALL).strip()
-        if end_choice == "0":
-            print(Fore.RED + "\nProgram will close in 3 seconds... Goodbye!\n" + Style.RESET_ALL)
-            time.sleep(3)
-            break
-        elif end_choice == "1":
-            print(Fore.CYAN + "\nRestarting program...\n" + Style.RESET_ALL)
-            continue
-        else:
-            print(Fore.RED + "\nInvalid choice! Exiting by default.\n" + Style.RESET_ALL)
-            time.sleep(3)
-            break
 
 
 
