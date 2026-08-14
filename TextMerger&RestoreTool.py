@@ -210,7 +210,7 @@ def goodbye():
 
 def main():
         clear_terminal()
-        print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool\nAuthor: Nariman\n\n" + Style.RESET_ALL)
+        print(Fore.YELLOW + "Welcome to Text Merger & Restore Tool - v1.04\nAuthor: Nariman\n\n" + Style.RESET_ALL)
 
         print(Fore.YELLOW + "   1 -" + Style.RESET_ALL + " Merge TXT Files")
         print(Fore.YELLOW + "   2 -" + Style.RESET_ALL + " Restore Original Files\n")
