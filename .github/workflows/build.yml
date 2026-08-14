@@ -11,45 +11,11 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    uses: aryanariman/github-actions-workflows/.github/workflows/python-build-release.yml@main
 
-    permissions:
-      contents: write
+    with:
+      files: |
+        TextMerger&RestoreTool.py
+        TextMerger&RestoreTool-DirEdition.py
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pyinstaller chardet colorama
-
-      - name: Build TextMerger & Restore Tool
-        run: |
-          python -m PyInstaller --onefile --name "TextMerger&RestoreTool" "TextMerger&RestoreTool.py"
-
-      - name: Build Dir Edition
-        run: |
-          python -m PyInstaller --onefile --name "TextMerger&RestoreTool-DirEdition" "TextMerger&RestoreTool-DirEdition.py"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: TextMerger-RestoreTool-Windows
-          path: |
-            dist/TextMerger&RestoreTool.exe
-            dist/TextMerger&RestoreTool-DirEdition.exe
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/TextMerger&RestoreTool.exe
-            dist/TextMerger&RestoreTool-DirEdition.exe
+      python-version: "3.13"
